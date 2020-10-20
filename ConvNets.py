@@ -5,6 +5,7 @@ from rnn import *
 import matplotlib.pyplot as plt
 from tqdm import tqdm
 from dataset import Dataset 
+import pandas as pd
 
 device = "cuda" if torch.cuda.is_available() else "cpu"
 
@@ -12,18 +13,17 @@ trainset = torchvision.datasets.FashionMNIST(root="./data", train = True, downlo
 
 classes = ("t-shirt", "trousers", "pullover", "dress", "coat", "sandal", "shirt", "sneaker", "bag", "ankle-boot")
 
-train = Dataset(trainset)
+train = Dataset(trainset, normalize= True)
 dataloader = torch.utils.data.DataLoader(train, batch_size=32, shuffle=True)
 
 imgs, labels = next(iter(dataloader))
 
-n_in, n_out = 30, 28 * 28
 # Creamos el generador
-generador = MLP(n_in, n_out)
+generador = Generator()
 # Recibe 30 hyperparametros y genera una imagen 28x28
 
 # Le pasamos 64 "imagenes"o hyperparametros.
-output = generador(torch.randn(64, 30))
+output = generador(torch.randn(64, 100))
 # Agarramos la primera imagen que genero
 if False:
     plt.imshow(output[0].reshape(28, 28).detach().numpy())
@@ -31,7 +31,7 @@ if False:
 # Nos genero ruido
 
 # Creamos el discriminador
-discriminador = MLP(28*28, 1)
+discriminador = Discriminator()
 # Recibe una imagen 28x28 y devuelve un valor (Falso o True)
 
 # Funcion de entrenamiento
@@ -99,10 +99,10 @@ def fit(g, d, dataloader, epochs = 30, crit = None):
         hist['d_loss'].append(np.mean(d_loss))
     return hist
 
-hist = fit(generador, discriminador, dataloader)
+hist = fit(generador, discriminador, dataloader, crit=torch.nn.BCELoss())
 
-torch.save(discriminador.state_dict(), "./models/MLP/discriminador_state_dict.pt")
-torch.save(generador.state_dict(), "./models/MLP/generador_state_dict.pt")
+torch.save(discriminador.state_dict(), "./models/ConvNets/discriminador_state_dict.pt")
+torch.save(generador.state_dict(), "./models/ConvNets/generador_state_dict.pt")
 
 df = pd.DataFrame(hist)
 df.plot(grid=True)
