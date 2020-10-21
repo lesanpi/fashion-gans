@@ -9,13 +9,16 @@ device = "cuda" if torch.cuda.is_available() else "cpu"
 n_in, n_out = 30, 28 * 28
 
 # Generador
-generador = MLP(n_in, n_out)
-generador.load_state_dict(torch.load("./models/MLP/generador_state_dict.pt"))
+#generador = MLP(n_in, n_out)
+generador = Generator()
+generador.load_state_dict(torch.load("./models/ConvNets/generador_state_dict.pt", map_location=torch.device(device)))
 
 #Discriminador
-discriminador = MLP(28*28, 1)
-discriminador.load_state_dict(torch.load("./models/MLP/discriminador_state_dict.pt"))
+#discriminador = MLP(28*28, 1)
+discriminador = Discriminator()
+discriminador.load_state_dict(torch.load("./models/ConvNets/discriminador_state_dict.pt", map_location=torch.device(device)))
 
+#discriminador.eval()
 generador.eval()
 with torch.no_grad():
     noise = torch.randn((10, generador.input_size)).to(device)
